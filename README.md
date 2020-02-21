@@ -1,2 +1,2 @@
 # react-vehicles
-ReactVehicles
+A vehicles application written using React
