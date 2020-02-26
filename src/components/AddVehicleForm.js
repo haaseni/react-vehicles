@@ -7,6 +7,7 @@ import Form from 'react-bootstrap/Form'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
+import Dropdown from './Dropdown'
 
 const schema = yup.object({
   vin: yup.string().required(),
@@ -14,6 +15,8 @@ const schema = yup.object({
   model: yup.string().required(),
   year: yup.number().required().positive().integer()
 });
+
+const emptyOption = { value: "", label: "" };
 
 function RedirectRoute(context) {
     return <Redirect to={context.state.redirect} />
@@ -27,7 +30,7 @@ function FormHtml(context) {
             validationSchema={schema}
             initialValues={{ 
                 vin: null,
-                make: null, 
+                make: null,
                 model: null,
                 year: null
             }}
@@ -51,7 +54,7 @@ function FormHtml(context) {
                 }
                 return errors;
             }}
-            onSubmit={(values, { setSubmitting }) => {                               
+            onSubmit = {(values, { setSubmitting }) => {                               
                 context.props.addVehicle(
                     values.vin, 
                     values.make, 
@@ -67,6 +70,8 @@ function FormHtml(context) {
                 handleChange,
                 handleBlur,
                 handleSubmit,
+                setFieldValue,
+                setFieldTouched,
                 isSubmitting
             }) => (
                 <Form noValidate onSubmit={handleSubmit}>
@@ -85,25 +90,42 @@ function FormHtml(context) {
                     <Form.Group as={Row} controlId="make">
                         <Form.Label column sm={1}>Make:</Form.Label>
                         <Col sm={8}>
-                            <Form.Control 
-                                type="text"
-                                name="make" 
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                                isInvalid={!!errors.make} />
-                            <Form.Control.Feedback type="invalid">{errors.make}</Form.Control.Feedback>
+                        <Dropdown
+                            name="make"
+                            options={context.state.makeOptions}
+                            value={values.make}
+                            onChange={(field, value) => {
+                                const newMakeValue = value.value;
+                                const shouldResetDependentSelect = newMakeValue !== context.state.prevMake;
+                                context.setState({ prevMake: newMakeValue }, () => {
+                                    setFieldValue(field, value);
+                                    context.updateModelOptions(value.value);
+                                    if (shouldResetDependentSelect) {
+                                        setFieldValue("model", emptyOption);
+                                    }
+                                });
+                            }}
+                            onBlur={setFieldTouched}
+                            error={errors.make}
+                            touched={touched.make}
+                        />
                         </Col>
                     </Form.Group>
                     <Form.Group as={Row} controlId="model">
                         <Form.Label column sm={1}>Model:</Form.Label>
                         <Col sm={8}>
-                            <Form.Control 
-                                type="text"
-                                name="model" 
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                                isInvalid={!!errors.model} />
-                            <Form.Control.Feedback type="invalid">{errors.model}</Form.Control.Feedback>
+                        <Dropdown
+                            name="model"
+                            isDisabled={!values.make}
+                            options={
+                                values.make ? context.state.modelOptions : []
+                            }
+                            value={values.model}
+                            onChange={setFieldValue}
+                            onBlur={setFieldTouched}
+                            error={errors.model}
+                            touched={touched.model}
+                        />
                         </Col>
                     </Form.Group>
                     <Form.Group as={Row} controlId="year">
@@ -131,9 +153,34 @@ class AddVehicleForm extends Component {
 		super(props)
 
 		this.state = {
-            redirect: null
+            redirect: null,
+            prevMake: null,
+            makeOptions: [],
+            modelOptions: []
         }
     }	
+    componentDidMount() {
+        fetch("https://vpic.nhtsa.dot.gov/api/vehicles/getallmakes?format=json")
+            .then(res => res.json())
+            .then((result) => {
+                this.setState({
+                    makeOptions: result.Results.map(make => { 
+                        return { value: make.Make_ID, label: make.Make_Name.trim() }; 
+                    })
+                });
+            });
+    }
+    updateModelOptions(makeId) {
+        fetch("https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeId/" + makeId + "?format=json")
+            .then(res => res.json())
+            .then((result) => {
+                this.setState({
+                    modelOptions: result.Results.map(model => {
+                        return { value: model.Model_ID, label: model.Model_Name.trim() };
+                    })
+                });
+            });
+    }
     render() {
         if (this.state.redirect) {
             return RedirectRoute(this)

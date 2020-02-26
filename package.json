@@ -39,6 +39,7 @@
         "react-bootstrap": "^1.0.0-beta.16",
         "react-redux": "^7.1.0",
         "react-router-dom": "^5.1.2",
+        "react-select": "^3.0.8",
         "redux": "^4.0.4",
         "redux-devtools-extension": "^2.13.8",
         "reselect": "^4.0.0",
