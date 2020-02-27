@@ -1,8 +1,8 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import VehicleList from '../components/VehicleList'
+import { fetchMakes } from '../store/fetchMakes';
 import { 
-	fetchMakes, 
 	deleteVehicle 
 } from '../store/reducer'
 

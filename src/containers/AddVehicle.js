@@ -1,7 +1,8 @@
-import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
-import AddVehicleForm from '../components/AddVehicleForm'
-import { fetchMakes, addVehicle } from '../store/reducer'
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import AddVehicleForm from '../components/AddVehicleForm';
+import { fetchMakes } from '../store/fetchMakes';
+import { addVehicle } from '../store/reducer';
 
 const mapStateToProps = (state) => ({
 	vehicles: state.vehicleReducer.vehicles,

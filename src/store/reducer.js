@@ -1,16 +1,10 @@
 import { combineReducers } from 'redux';
-
-const ADD_VEHICLE = "ADD_VEHICLE";
-const UPDATE_VEHICLE = "UPDATE_VEHICLE";
-const DELETE_VEHICLE = "DELETE_VEHICLE";
-const FETCH_MAKES_BEGIN = "FETCH_MAKES_BEGIN";
-const FETCH_MAKES_SUCCESS = "FETCH_MAKES_SUCCESS";
-const FETCH_MAKES_FAILURE = "FETCH_MAKES_FAILURE";
+import * as Constants from './constants'
 
 // Action Creaters
 export const addVehicle = (vin, make, model, year) => {
   return {
-    type: ADD_VEHICLE,
+    type: Constants.ADD_VEHICLE,
     payload: {
       vin: vin,
       make: make,
@@ -22,7 +16,7 @@ export const addVehicle = (vin, make, model, year) => {
 
 export const updateVehicle = (vin, make, model, year) => {
   return {
-    type: UPDATE_VEHICLE,
+    type: Constants.UPDATE_VEHICLE,
     payload: {
       vin: vin,
       make: make,
@@ -34,54 +28,12 @@ export const updateVehicle = (vin, make, model, year) => {
 
 export const deleteVehicle = (vin) => {
   return {
-    type: DELETE_VEHICLE,
+    type: Constants.DELETE_VEHICLE,
     payload: {
       vin: vin
     }
   };
 };
-
-export const fetchMakesBegin = () => ({
-  type: FETCH_MAKES_BEGIN
-});
-
-export const fetchMakesSuccess = makes => ({
-  type: FETCH_MAKES_SUCCESS,
-  payload: { 
-    makes 
-  }
-});
-
-export const fetchMakesFailure = error => ({
-  type: FETCH_MAKES_FAILURE,
-  payload: { 
-    error 
-  }
-});
-
-export function fetchMakes() {
-    return dispatch => { 
-      dispatch(fetchMakesBegin());
-      return fetch("https://vpic.nhtsa.dot.gov/api/vehicles/getallmakes?format=json")
-      .then(handleErrors)
-      .then(res => res.json())
-      .then(res => {
-        const makes = res.Results.map(make => { 
-          return { value: make.Make_ID, label: make.Make_Name.trim() }; 
-        });
-        const results = dispatch(fetchMakesSuccess(makes));
-        return results.payload.makes;
-      })
-      .catch(error => dispatch(fetchMakesFailure(error)));
-    }
-}
-
-function handleErrors(response) {
-  if (!response.ok) {
-    throw Error(response.statusText);
-  }
-  return response;
-}
 
 // Reducers
 const initialState = {
@@ -107,13 +59,13 @@ const initialState = {
 
 const vehicleReducer = (state = initialState, action) => {
   switch (action.type) {
-    case ADD_VEHICLE:
+    case Constants.ADD_VEHICLE:
       return {
         ...state,
         vehicles: [...state.vehicles, action.payload]
       };
   
-    case UPDATE_VEHICLE:
+    case Constants.UPDATE_VEHICLE:
       return {
         ...state, 
         vehicles: state.vehicles.map(vehicle => {
@@ -129,27 +81,27 @@ const vehicleReducer = (state = initialState, action) => {
         })
       };
 
-    case DELETE_VEHICLE:
+    case Constants.DELETE_VEHICLE:
       return { 
         ...state, 
         vehicles: state.vehicles.filter(vehicle => vehicle.vin !== action.payload.vin) 
       };
 
-    case FETCH_MAKES_BEGIN:
+    case Constants.FETCH_MAKES_BEGIN:
       return {
         ...state,
         loading: true,
         error: null
       };
   
-    case FETCH_MAKES_SUCCESS:
+    case Constants.FETCH_MAKES_SUCCESS:
       return {
         ...state,
         loading: false,
         makes: action.payload.makes
       };
   
-    case FETCH_MAKES_FAILURE:
+    case Constants.FETCH_MAKES_FAILURE:
       return {
         ...state,
         loading: false,
