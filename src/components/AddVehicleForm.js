@@ -90,42 +90,42 @@ function FormHtml(context) {
                     <Form.Group as={Row} controlId="make">
                         <Form.Label column sm={1}>Make:</Form.Label>
                         <Col sm={8}>
-                        <Dropdown
-                            name="make"
-                            options={context.state.makeOptions}
-                            value={values.make}
-                            onChange={(field, value) => {
-                                const newMakeValue = value.value;
-                                const shouldResetDependentSelect = newMakeValue !== context.state.prevMake;
-                                context.setState({ prevMake: newMakeValue }, () => {
-                                    setFieldValue(field, value);
-                                    context.updateModelOptions(value.value);
-                                    if (shouldResetDependentSelect) {
-                                        setFieldValue("model", emptyOption);
-                                    }
-                                });
-                            }}
-                            onBlur={setFieldTouched}
-                            error={errors.make}
-                            touched={touched.make}
-                        />
+                            <Dropdown
+                                name="make"
+                                options={context.state.makeOptions}
+                                value={values.make}
+                                onChange={(field, value) => {
+                                    const newMakeValue = value.value;
+                                    const shouldResetDependentSelect = newMakeValue !== context.state.prevMake;
+                                    context.setState({ prevMake: newMakeValue }, () => {
+                                        setFieldValue(field, value);
+                                        context.updateModelOptions(value.value);
+                                        if (shouldResetDependentSelect) {
+                                            setFieldValue("model", emptyOption);
+                                        }
+                                    });
+                                }}
+                                onBlur={setFieldTouched}
+                                error={errors.make}
+                                touched={touched.make}
+                            />
                         </Col>
                     </Form.Group>
                     <Form.Group as={Row} controlId="model">
                         <Form.Label column sm={1}>Model:</Form.Label>
                         <Col sm={8}>
-                        <Dropdown
-                            name="model"
-                            isDisabled={!values.make}
-                            options={
-                                values.make ? context.state.modelOptions : []
-                            }
-                            value={values.model}
-                            onChange={setFieldValue}
-                            onBlur={setFieldTouched}
-                            error={errors.model}
-                            touched={touched.model}
-                        />
+                            <Dropdown
+                                name="model"
+                                isDisabled={!values.make}
+                                options={
+                                    values.make ? context.state.modelOptions : []
+                                }
+                                value={values.model}
+                                onChange={setFieldValue}
+                                onBlur={setFieldTouched}
+                                error={errors.model}
+                                touched={touched.model}
+                            />
                         </Col>
                     </Form.Group>
                     <Form.Group as={Row} controlId="year">
@@ -159,16 +159,10 @@ class AddVehicleForm extends Component {
             modelOptions: []
         }
     }	
-    componentDidMount() {
-        fetch("https://vpic.nhtsa.dot.gov/api/vehicles/getallmakes?format=json")
-            .then(res => res.json())
-            .then((result) => {
-                this.setState({
-                    makeOptions: result.Results.map(make => { 
-                        return { value: make.Make_ID, label: make.Make_Name.trim() }; 
-                    })
-                });
-            });
+    componentDidMount = () => {
+        this.props.fetchMakes();
+
+        this.setState({makeOptions: this.props.makes});
     }
     updateModelOptions(makeId) {
         fetch("https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeId/" + makeId + "?format=json")

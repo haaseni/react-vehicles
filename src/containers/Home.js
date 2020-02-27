@@ -1,16 +1,23 @@
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import { deleteVehicle } from '../store/reducer'
 import VehicleList from '../components/VehicleList'
+import { 
+	fetchMakes, 
+	deleteVehicle 
+} from '../store/reducer'
 
 const mapStateToProps = (state) => ({
-	vehicles: state.vehicleReducer.vehicles
+	vehicles: state.vehicleReducer.vehicles,
+	makes: state.vehicleReducer.makes,
+  	loading: state.vehicleReducer.loading,
+  	error: state.vehicleReducer.error
 });
 
 const mapDispatchToProps = (dispatch) => (
-	bindActionCreators({ deleteVehicle }, dispatch)
+	bindActionCreators({ 
+		fetchMakes: fetchMakes, 
+		deleteVehicle: deleteVehicle 
+	}, dispatch)
 );
 
-const Home = connect(mapStateToProps, mapDispatchToProps)(VehicleList);
-
-export default Home;
+export default connect(mapStateToProps, mapDispatchToProps)(VehicleList);

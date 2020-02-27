@@ -4,6 +4,7 @@ import Container from 'react-bootstrap/Container'
 import Table from 'react-bootstrap/Table'
 import Button from 'react-bootstrap/Button'
 import Pagination from 'react-bootstrap/Pagination'
+import Loader from './Loader'
 
 class VehicleList extends Component {
     constructor(props) {
@@ -11,13 +12,37 @@ class VehicleList extends Component {
         
         this.state = {
             currentPage: 1,
-            vehiclesPerPage: 10
+            vehiclesPerPage: 10,
+            models: []
+        };
+    }
+    componentDidMount = () => {
+        const { vehicles } = this.props;
+        this.props.fetchMakes();
+
+        // Loop through vehicles and get models for the makes
+        for(let i = 0; i < vehicles.length; i++) {
+            const vehicle = vehicles[i];
+
+            if (this.state.models.find(model => model.makeId === vehicle.make)) {
+                continue;
+            }
+
+            fetch("https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeId/" + vehicle.make + "?format=json")
+                .then(res => res.json())
+                .then(res => {
+                    const models = res.Results.map((model) => { 
+                        return { makeId: vehicle.make, modelId: model.Model_ID, name: model.Model_Name.trim() }; 
+                    });
+                    this.setState(state => {
+                        const newList = state.models.concat(models);
+                        return { ...this.state, models: newList };
+                    });
+                });
         };
     }
     handlePageClick = (e) => {
-        this.setState({
-            "currentPage": Number(e.target.text)
-        });
+        this.setState({currentPage: Number(e.target.text)});
     }
     renderTableHeader = (vehicles) => {
         if (vehicles.length > 0) {
@@ -29,10 +54,11 @@ class VehicleList extends Component {
             returnHtml.push(<th key={returnHtml.length + 1}>DELETE</th>) // Add the delete header
             return returnHtml;
         }
-     }
+    }
     renderTableData = (vehicles) => {
         return vehicles.map((vehicle, index) => {
-            const { vin, make, model, year } = vehicle
+            const { vin, make, model, year } = vehicle;
+
             return (
                <tr key={vin}>
                   <td><Link to={`/edit/${vin}`}>{vin}</Link></td>
@@ -48,15 +74,36 @@ class VehicleList extends Component {
         this.props.deleteVehicle(vin);
     }
     render() {
+        const { vehicles, makes, loading, error } = this.props;
+        const { models } = this.state;
+
+        if (loading) {
+            return <Loader />
+        }
+        if (error) {
+            return <span className='vehicle-list-error'>{error}</span>
+        }
+
         // Logic for displaying todos
         const indexOfLast = this.state.currentPage * this.state.vehiclesPerPage;
         const indexOfFirst = indexOfLast - this.state.vehiclesPerPage;
-        const pageOfVehicles = this.props.vehicles.slice(indexOfFirst, indexOfLast);
+        let pageOfVehicles = vehicles ? vehicles.slice(indexOfFirst, indexOfLast) : [];
+
+        // Lookup and load make and model labels
+        pageOfVehicles = pageOfVehicles.map(vehicle => {
+            const make = makes.find(make => make.value === vehicle.make);
+            const model = models.find(model => model.modelId === vehicle.model);
+
+            return {...vehicle, make: make ? make.label : null, model: model ? model.name : null};
+        });
 
         // Logic for displaying page numbers
         const pageNumbers = [];
-        for (let i = 1; i <= Math.ceil(this.props.vehicles.length / this.state.vehiclesPerPage); i++) {
-            pageNumbers.push(i);
+
+        if (vehicles) {
+            for (let i = 1; i <= Math.ceil(vehicles.length / this.state.vehiclesPerPage); i++) {
+                pageNumbers.push(i);
+            }
         }
 
         const renderPageNumbers = pageNumbers.map(number => {

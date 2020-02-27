@@ -7,7 +7,7 @@
         "url": "https://github.com/haaseni/react-vehicles.git"
     },
     "scripts": {
-        "start": "webpack-dev-server --open --config webpack.dev.js",
+        "serve": "webpack-dev-server --open --config webpack.dev.js",
         "build": "webpack --config webpack.prod.js"
     },
     "devDependencies": {
@@ -40,8 +40,10 @@
         "react-redux": "^7.1.0",
         "react-router-dom": "^5.1.2",
         "react-select": "^3.0.8",
+        "react-spinners": "^0.8.0",
         "redux": "^4.0.4",
         "redux-devtools-extension": "^2.13.8",
+        "redux-thunk": "^2.3.0",
         "reselect": "^4.0.0",
         "webpack-dev-server": "^3.7.2",
         "webpack-merge": "^4.2.1",

@@ -7,12 +7,15 @@ import Form from 'react-bootstrap/Form'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
+import Dropdown from './Dropdown'
 
 const schema = yup.object({
     newMake: yup.string().required(),
     newModel: yup.string().required(),
     newYear: yup.number().required().positive().integer()
-  });
+});
+
+const emptyOption = { value: "", label: "" };
 
 function RedirectRoute(context) {
     return <Redirect to={context.state.redirect} />
@@ -49,8 +52,8 @@ function FormHtml(context) {
             onSubmit={(values, { setSubmitting }) => {                               
                 context.props.updateVehicle(
                     values.vehicle.vin, 
-                    values.newMake, 
-                    values.newModel,
+                    values.newMake.value, 
+                    values.newModel.value,
                     values.newYear);
                 setTimeout(() => context.setState({"redirect": "/"}), 1000);
             }}
@@ -62,6 +65,8 @@ function FormHtml(context) {
                 handleChange,
                 handleBlur,
                 handleSubmit,
+                setFieldValue,
+                setFieldTouched,
                 isSubmitting
             }) => (
                 <Form noValidate onSubmit={handleSubmit}>
@@ -74,27 +79,44 @@ function FormHtml(context) {
                     <Form.Group as={Row} controlId="newMake">
                         <Form.Label column sm={1}>Make:</Form.Label>
                         <Col sm={8}>
-                            <Form.Control 
-                                type="text"
-                                name="newMake" 
-                                defaultValue={values.vehicle.make}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                                isInvalid={touched.newMake && !!errors.newMake} />
-                            <Form.Control.Feedback type="invalid">{errors.newMake}</Form.Control.Feedback>
+                            <Dropdown
+                                id="newMake"
+                                name="newMake"
+                                options={context.state.makeOptions}
+                                value={values.newMake}
+                                onChange={(field, value) => {
+                                    const newMakeValue = value.value;
+                                    const shouldResetDependentSelect = newMakeValue !== context.state.prevMake;
+                                    context.setState({ prevMake: newMakeValue }, () => {
+                                        setFieldValue(field, value);
+                                        context.updateModelOptions(value.value);
+                                        if (shouldResetDependentSelect) {
+                                            setFieldValue("newModel", emptyOption);
+                                        }
+                                    });
+                                }}
+                                onBlur={setFieldTouched}
+                                error={errors.newMake}
+                                touched={touched.newMake}
+                            />
                         </Col>
                     </Form.Group>
                     <Form.Group as={Row} controlId="newModel">
                         <Form.Label column sm={1}>Model:</Form.Label>
                         <Col sm={8}>
-                            <Form.Control 
-                                type="text"
-                                name="newModel" 
-                                defaultValue={values.vehicle.model}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                                isInvalid={touched.newModel && !!errors.newModel} />
-                            <Form.Control.Feedback type="invalid">{errors.newModel}</Form.Control.Feedback>
+                            <Dropdown
+                                id="newModel"
+                                name="newModel"
+                                isDisabled={!values.newMake}
+                                options={
+                                    values.newMake ? context.state.modelOptions : []
+                                }
+                                value={values.newModel}
+                                onChange={setFieldValue}
+                                onBlur={setFieldTouched}
+                                error={errors.newModel}
+                                touched={touched.newModel}
+                            />
                         </Col>
                     </Form.Group>
                     <Form.Group as={Row} controlId="newYear">
@@ -124,9 +146,27 @@ class EditVehicleForm extends Component {
         const currentVehicle = this.props.vehicles.find(vehicle => vehicle.vin === this.props.match.params["vin"]);
         this.state = {
             vehicle: currentVehicle,
-            redirect: null
+            redirect: null,
+            prevMake: null,
+            makeOptions: [],
+            modelOptions: []
         }
     }	
+    componentDidMount = () => {
+        this.props.fetchMakes();
+        this.setState({makeOptions: this.props.makes});
+    }
+    updateModelOptions(makeId) {
+        fetch("https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeId/" + makeId + "?format=json")
+            .then(res => res.json())
+            .then((result) => {
+                this.setState({
+                    modelOptions: result.Results.map(model => {
+                        return { value: model.Model_ID, label: model.Model_Name.trim() };
+                    })
+                });
+            });
+    }
     render() {
         if (this.state.redirect) {
             return RedirectRoute(this)
