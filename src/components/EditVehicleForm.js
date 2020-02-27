@@ -29,7 +29,7 @@ function FormHtml(context) {
             validationSchema={schema}
             initialValues={{ 
                 vehicle: context.state.vehicle,
-                newMake: context.state.vehicle.make, 
+                newMake: [ context.state.makeOptions.find(make => make.value === context.state.vehicle.make) ], 
                 newModel: context.state.vehicle.model,
                 newYear: context.state.vehicle.year
             }}
@@ -85,7 +85,7 @@ function FormHtml(context) {
                                 options={context.state.makeOptions}
                                 value={values.newMake}
                                 onChange={(field, value) => {
-                                    const newMakeValue = value.value;
+                                    const newMakeValue = value;
                                     const shouldResetDependentSelect = newMakeValue !== context.state.prevMake;
                                     context.setState({ prevMake: newMakeValue }, () => {
                                         setFieldValue(field, value);
@@ -155,6 +155,7 @@ class EditVehicleForm extends Component {
     componentDidMount = () => {
         this.props.fetchMakes();
         this.setState({makeOptions: this.props.makes});
+        this.setState({ prevMake: [ this.state.makeOptions.find(make => make.value === this.state.vehicle.make) ]})
     }
     updateModelOptions(makeId) {
         fetch("https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeId/" + makeId + "?format=json")
