@@ -34,7 +34,7 @@
         "@babel/plugin-proposal-class-properties": "^7.8.3",
         "formik": "^2.1.4",
         "inline-source-map": "^0.6.2",
-        "jquery": "^3.4.1",
+        "jquery": "^3.5.0",
         "prop-types": "^15.7.2",
         "react-bootstrap": "^1.0.0-beta.16",
         "react-redux": "^7.1.0",
