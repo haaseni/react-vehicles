@@ -28,7 +28,7 @@
         "webpack": "^4.35.3",
         "webpack-cli": "^3.3.12",
         "webpack-dev-middleware": "^3.7.0",
-        "webpack-hot-middleware": "^2.25.0"
+        "webpack-hot-middleware": "^2.25.3"
     },
     "dependencies": {
         "@babel/plugin-proposal-class-properties": "^7.8.3",
@@ -45,7 +45,7 @@
         "redux-devtools-extension": "^2.13.8",
         "redux-thunk": "^2.3.0",
         "reselect": "^4.0.0",
-        "webpack-dev-server": "^3.7.2",
+        "webpack-dev-server": "^3.11.3",
         "webpack-merge": "^4.2.1",
         "yup": "^0.28.1"
     }
