@@ -17,7 +17,7 @@
         "aspnet-webpack": "^3.0.0",
         "babel-loader": "^8.0.6",
         "bootstrap": "^5.0.0",
-        "css-loader": "^3.0.0",
+        "css-loader": "^7.1.2",
         "eslint": "^5.2.0",
         "html-webpack-plugin": "^5.5.1",
         "prettier": "1.19.1",
